@@ -12,9 +12,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.tags.form.AbstractDataBoundFormElementTag;
 
 @RestController
 public class ManageBanca {
+	
+	private Database db = new Database();
 	
 	public Map<String, String> parseBody(String str) {
 		Map<String, String> body = new HashMap<>();
@@ -33,7 +36,7 @@ public class ManageBanca {
 	@RequestMapping("/api/account")
 	public List<Account> returnAllAccount() {
 		
-		return DemoApplication.accountList;
+		return null;
 	}
 	
 	@RequestMapping(value = "/api/account", method = RequestMethod.POST)
@@ -42,7 +45,7 @@ public class ManageBanca {
 		
 		Account ac = new Account(body.get("name"), body.get("surname"));
 		
-		DemoApplication.accountList.add(ac);
+		db.addAccount(ac.getName(), ac.getSurname(), ac.getAccountId());
 		
 		return ac.getAccountId();
 	}

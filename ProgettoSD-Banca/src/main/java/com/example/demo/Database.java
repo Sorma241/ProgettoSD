@@ -12,7 +12,6 @@ public class Database {
 		
 		Connection c = null;
 		
-		File dbFile = new File(".");
 		String url="jdbc:sqlite:prova.db";
 		
 		System.out.println(url);
