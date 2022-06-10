@@ -1,9 +1,11 @@
 package com.example.demo;
 
-import java.io.File;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+
+
 
 public class Database {
 
@@ -16,14 +18,15 @@ public class Database {
 		System.out.println(url);
 
 		try {
+			
 			Class.forName("org.sqlite.JDBC");
 			c = DriverManager.getConnection(url);
+			
 		} catch (Exception e) {
 
 			e.printStackTrace();
 		}
 
-		System.out.println("Connection successfully");
 		return c;
 	}
 
@@ -40,25 +43,36 @@ public class Database {
 		pstmt.executeUpdate();
 	}
 	
-	public List<String> returnAllAccounts() throws SQLException {
+	public List<Account> returnAllAccounts() throws SQLException {
 
 		String sql = "SELECT * FROM Account";
 
 		Connection conn = this.connect();
 
-		Statement pstmt = conn.createStatement();
-		ResultSet rs = pstmt.executeQuery(sql);
+		Statement st = conn.createStatement();
+		ResultSet rs = st.executeQuery(sql);
 		
-		String a;
-		List<String> acc = new ArrayList<String>();
+		
+		List<Account> accountList = new ArrayList<>();
 		while(rs.next()) {
-			a = rs.getString("name") + ":" + rs.getString("surname") + ":" + rs.getString("accountId");
 			
-			System.out.println(a);
-			acc.add(a);
+			accountList.add(new Account(rs.getString("name"), rs.getString("surname"), rs.getString("accountId")));
+			
 		}
 		
-		return acc;
+		return accountList;
+		
+	}
+	
+	public void deleteAccount(String id) throws SQLException {
+		
+		String sql = "DELETE FROM Account WHERE AccountId = '" + id + "'";
+		
+		Connection conn = this.connect();
+		
+		Statement st = conn.createStatement();
+		st.executeUpdate(sql);
+		
 	}
 
 }

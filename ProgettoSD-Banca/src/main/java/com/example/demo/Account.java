@@ -16,6 +16,12 @@ public class Account {
 		createId();
 	}
 	
+	public Account(String name, String surname, String id) {
+		this.name = name;
+		this.surname = surname;
+		this.accountId = id;
+	}
+	
 	private void createId() {
 		
 		int maxLength = 20;
