@@ -17,6 +17,9 @@ public class DemoApplication {
 		Account a = new Account("provsa", "prova");
 		accountList.add(a);
 		
+		Database d = new Database();
+		d.addAccount("prova", "prova", "sdkj3j323k423");
+		
 	}
 
 }
