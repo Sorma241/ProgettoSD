@@ -7,19 +7,23 @@ public class Account {
 	private String name;
 	private String surname;
 	private String accountId;
+	private double saldo;
+	
 
 	
 	
 	public Account(String name, String surname) {
 		this.name = name;
 		this.surname = surname;
+		this.saldo = 0;
 		createId();
 	}
 	
-	public Account(String name, String surname, String id) {
+	public Account(String name, String surname, String id, double saldo) {
 		this.name = name;
 		this.surname = surname;
 		this.accountId = id;
+		this.saldo = saldo;
 	}
 	
 	private void createId() {
