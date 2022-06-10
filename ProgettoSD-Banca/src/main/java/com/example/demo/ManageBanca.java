@@ -1,11 +1,17 @@
 package com.example.demo;
 
+import java.sql.ResultSet;
+import java.sql.SQLClientInfoException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.websocket.server.PathParam;
 
+import org.apache.catalina.webresources.Cache;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,8 +40,14 @@ public class ManageBanca {
 	}
 
 	@RequestMapping("/api/account")
-	public List<Account> returnAllAccount() {
+	public List<String> returnAllAccount() {
 		
+		try {
+			return db.returnAllAccounts();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return null;
 	}
 	
@@ -45,14 +57,23 @@ public class ManageBanca {
 		
 		Account ac = new Account(body.get("name"), body.get("surname"));
 		
-		db.addAccount(ac.getName(), ac.getSurname(), ac.getAccountId());
+		try {
+			db.addAccount(ac.getName(), ac.getSurname(), ac.getAccountId());
+		}catch (SQLException e) {
+			if(e.getMessage().indexOf("SQLITE_CONSTRAINT_PRIMARYKEY") >= 0) {
+				return new ResponseEntity<String>("Constraint key", HttpStatus.CONFLICT).toString();
+			}else {
+				return new ResponseEntity<String>("Server Error", HttpStatus.INTERNAL_SERVER_ERROR).toString();
+			}
+		}
+		
 		
 		return ac.getAccountId();
 	}
 	
 	@RequestMapping(value = "/api/account", method = RequestMethod.DELETE)
 	public void delateAccount(@PathParam(value = "ID") String IDaccount) {
-		
+		System.out.println(IDaccount);
 	}
 }
 

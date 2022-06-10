@@ -12,8 +12,7 @@ public class DemoApplication {
 		SpringApplication.run(DemoApplication.class, args);
 		
 		Database db = new Database();
-		Account a = new Account("provsa", "prova");
-		db.addAccount(a.getName(), a.getSurname(), a.getAccountId());
+		
 		
 	}
 
