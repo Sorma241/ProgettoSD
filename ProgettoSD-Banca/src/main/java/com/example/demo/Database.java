@@ -56,7 +56,7 @@ public class Database {
 		List<Account> accountList = new ArrayList<>();
 		while(rs.next()) {
 			
-			accountList.add(new Account(rs.getString("name"), rs.getString("surname"), rs.getString("accountId")));
+			accountList.add(new Account(rs.getString("name"), rs.getString("surname"), rs.getString("accountId"), rs.getDouble("balance")));
 			
 		}
 		

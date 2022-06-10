@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -95,6 +96,23 @@ public class ManageBanca {
 		}
 		
 		return "Successo";
+	}
+	
+	@RequestMapping("/api/account/{accountId}")
+	public List<Account> returnAllAccount(@PathVariable String accountId) {
+		
+		List<Account> risultato = null;
+		
+		try {
+			
+			risultato = db.returnAllAccounts();
+			
+		} catch (SQLException e) {
+			
+			System.out.println("Errore sistema: " + e.getCause());
+		}
+		
+		return risultato;
 	}
 }
 
