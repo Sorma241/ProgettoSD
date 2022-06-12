@@ -32,7 +32,7 @@ public class Database {
 
 	public void addAccount(String name, String surname, String accountId) throws SQLException {
 
-		String sql = "INSERT INTO Account(accountId, name, surname, saldo) VALUES(?,?,?,0)";
+		String sql = "INSERT INTO Account(accountId, name, surname, balance) VALUES(?,?,?,0)";
 
 		Connection conn = this.connect();
 
@@ -73,6 +73,38 @@ public class Database {
 		Statement st = conn.createStatement();
 		st.executeUpdate(sql);
 		
+	}
+	
+	public Account returnAccount(String id) throws SQLException {
+		String sql = "SELECT * FROM Account WHERE accountId = '" + id + "'";
+		Connection conn = this.connect();
+		
+		Statement st = conn.createStatement();
+		ResultSet rs = st.executeQuery(sql);
+		
+		Account resuls = new Account(rs.getString("name"), rs.getString("surname"), rs.getString("accountId"),rs.getDouble("balance"));
+		
+		return resuls;
+	}
+	
+	public List<String> returnTransferAccount(String id) throws SQLException {
+		String sql = "SELECT id_transfer "
+				   + "FROM Account A, Transfer T "
+				   + "WHERE accountID = from_account"
+				   + "AND accountId = '" + id + "'";
+		Connection conn = this.connect();
+		
+		Statement st = conn.createStatement();
+		ResultSet rs = st.executeQuery(sql);
+		
+		List<String> allTransfer = new ArrayList<>();
+		while(rs.next()) {
+			
+			allTransfer.add(rs.getString("name"));
+			
+		}
+		
+		return allTransfer;
 	}
 
 }

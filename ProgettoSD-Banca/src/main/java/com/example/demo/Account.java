@@ -1,5 +1,6 @@
 package com.example.demo;
 
+import java.util.List;
 import java.util.Random;
 
 public class Account {
@@ -7,7 +8,8 @@ public class Account {
 	private String name;
 	private String surname;
 	private String accountId;
-	private double saldo;
+	private double balance;
+	//private List<String> transizioni;
 	
 
 	
@@ -15,7 +17,7 @@ public class Account {
 	public Account(String name, String surname) {
 		this.name = name;
 		this.surname = surname;
-		this.saldo = 0;
+		this.balance = 0;
 		createId();
 	}
 	
@@ -23,7 +25,7 @@ public class Account {
 		this.name = name;
 		this.surname = surname;
 		this.accountId = id;
-		this.saldo = saldo;
+		this.balance = saldo;
 	}
 	
 	private void createId() {
@@ -52,6 +54,8 @@ public class Account {
 	public String getSurname() {
 		return surname;
 	}
+	
+	//public void setTransfert() {
 	
 	
 }
