@@ -15,8 +15,6 @@ public class Database {
 
 		String url = "jdbc:sqlite:prova.db";
 
-		System.out.println(url);
-
 		try {
 			
 			Class.forName("org.sqlite.JDBC");
@@ -87,20 +85,20 @@ public class Database {
 		return resuls;
 	}
 	
-	public List<String> returnTransferAccount(String id) throws SQLException {
-		String sql = "SELECT id_transfer "
-				   + "FROM Account A, Transfer T "
-				   + "WHERE accountID = from_account"
-				   + "AND accountId = '" + id + "'";
+	public List<Transaction> returnTransferAccount(String id) throws SQLException {
+		String sql = "SELECT t.id_transfer, t.from_account, t.to_account, t.transfer_date, t.amount FROM Account AS a, Transfer AS t WHERE a.accountId = t.from_account AND accountId = '" + id + "'";
+		
 		Connection conn = this.connect();
 		
 		Statement st = conn.createStatement();
 		ResultSet rs = st.executeQuery(sql);
 		
-		List<String> allTransfer = new ArrayList<>();
+		List<Transaction> allTransfer = new ArrayList<>();
 		while(rs.next()) {
 			
-			allTransfer.add(rs.getString("name"));
+			Transaction trans = new Transaction(rs.getString("from_account"), rs.getString("to_account"), rs.getString("id_transfer"), rs.getTimestamp("transfer_date"), rs.getDouble("amount"));
+			
+			allTransfer.add(trans);
 			
 		}
 		

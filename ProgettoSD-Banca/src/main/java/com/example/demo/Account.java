@@ -1,5 +1,7 @@
 package com.example.demo;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -9,7 +11,7 @@ public class Account {
 	private String surname;
 	private String accountId;
 	private double balance;
-	//private List<String> transizioni;
+	private List<Transaction> transactions;
 	
 
 	
@@ -18,6 +20,8 @@ public class Account {
 		this.name = name;
 		this.surname = surname;
 		this.balance = 0;
+		this.transactions = new ArrayList<>();
+		getAccountTransaction();
 		createId();
 	}
 	
@@ -26,6 +30,7 @@ public class Account {
 		this.surname = surname;
 		this.accountId = id;
 		this.balance = saldo;
+		getAccountTransaction();
 	}
 	
 	private void createId() {
@@ -43,6 +48,17 @@ public class Account {
 		
 	}
 	
+	private void getAccountTransaction() {
+		
+		try {
+			transactions = new Database().returnTransferAccount(accountId);
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+		}
+		
+	}
+	
 	public String getAccountId(){
 		return accountId;
 	}
@@ -55,7 +71,7 @@ public class Account {
 		return surname;
 	}
 	
-	//public void setTransfert() {
+	
 	
 	
 }

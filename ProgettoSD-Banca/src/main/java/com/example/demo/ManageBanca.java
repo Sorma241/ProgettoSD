@@ -102,8 +102,7 @@ public class ManageBanca {
 		try {
 
 			ac = db.returnAccount(accountId);
-			//recupera transazioni
-			//setta lista di transazioni
+			
 
 		} catch (SQLException e) {
 
