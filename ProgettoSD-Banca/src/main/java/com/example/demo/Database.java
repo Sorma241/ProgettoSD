@@ -96,7 +96,7 @@ public class Database {
 		List<Transaction> allTransfer = new ArrayList<>();
 		while(rs.next()) {
 			
-			Transaction trans = new Transaction(rs.getString("from_account"), rs.getString("to_account"), rs.getString("id_transfer"), rs.getTimestamp("transfer_date"), rs.getDouble("amount"));
+			Transaction trans = new Transaction(rs.getString("from_account"), rs.getString("to_account"), rs.getString("id_transfer"), rs.getDate("transfer_date"), rs.getDouble("amount"));
 			
 			allTransfer.add(trans);
 			
