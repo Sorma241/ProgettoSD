@@ -106,7 +106,7 @@ public class Database {
 		Statement st = conn.createStatement();
 		ResultSet rs = st.executeQuery(sql);
 		
-		Account resuls = new Account(rs.getString("name"), rs.getString("surname"), rs.getString("accountId"),rs.getDouble("balance"));
+		Account resuls = new Account(rs.getString("name"), rs.getString("surname"), "", rs.getDouble("balance"));
 		
 		endConnection(conn);
 		return resuls;
@@ -145,5 +145,18 @@ public class Database {
 		
 		endConnection(conn);
 	}
+	
+	public void changeValue(String accountId, String name, String parameter) throws SQLException {
+		String sql = "UPDATE Account SET '" + parameter + "' = " + "'" + name + "' WHERE accountId = '"+ accountId + "'";
+		
+		Connection conn = this.connect();
+		
+		Statement st = conn.createStatement();
+		st.executeUpdate(sql);
+		
+		endConnection(conn);
+	}
+	
+	
 
 }

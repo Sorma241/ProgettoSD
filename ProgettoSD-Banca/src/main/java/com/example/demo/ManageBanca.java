@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 @RestController
 public class ManageBanca {
 
@@ -64,7 +67,7 @@ public class ManageBanca {
 
 		try {
 
-			db.addAccount(ac.getName(), ac.getSurname(), ac.getAccountId());
+			db.addAccount(ac.getName(), ac.getSurname(), ac.getAccountID());
 
 		} catch (SQLException e) {
 
@@ -78,7 +81,7 @@ public class ManageBanca {
 
 		}
 
-		return ac.getAccountId();
+		return ac.getAccountID();
 	}
 
 	@RequestMapping(value = "/api/account", method = RequestMethod.DELETE)
@@ -102,7 +105,7 @@ public class ManageBanca {
 		try {
 
 			ac = db.returnAccount(accountId);
-			
+			ac.setTransactions(db.returnTransferAccount(accountId));
 
 		} catch (SQLException e) {
 
@@ -111,29 +114,86 @@ public class ManageBanca {
 
 		return ac;
 	}
-	
-	
+
 	@RequestMapping(value = "/api/account/{accountId}", method = RequestMethod.POST)
 	public String deposit(@RequestBody String amount, @PathVariable String accountId) {
-		
+
 		Map<String, String> body = parseBody(amount);
 		double operationAmount = Double.parseDouble(body.get("amount"));
-		
-		
-		 try {
+
+		try {
 			db.changeBalance(accountId, operationAmount);
-			
+
 		} catch (SQLException e) {
-			
+
 			System.out.println(e.getMessage());
 			return "Errore";
 		}
-		 
-		 
-		 return "Successo";
+
+		return "Successo";
+	}
+
+	@RequestMapping(value = "/api/account/{accountId}", method = RequestMethod.PUT)
+	public String changeNameSurname(@RequestBody String valueBody, @PathVariable String accountId) {	
 		
+		ObjectMapper mapper = new ObjectMapper();
+		Map<String, String> body = null;
 		
+		try {
+			
+			body = mapper.readValue(valueBody, Map.class);
+			
+		} catch (JsonProcessingException e1) {
+			e1.printStackTrace();
+		}
 		
+		String newName = body.get("name");
+		String newSurname = body.get("surname");
+
+		try {
+			
+			db.changeValue(accountId, newName, "name");
+			db.changeValue(accountId, newSurname, "surname");
+
+		} catch (SQLException e) {
+
+			System.out.println(e.getMessage());
+			return "Errore";
+		}
+
+		return "Successo";
+	}
+
+	@RequestMapping(value = "/api/account/{accountId}", method = RequestMethod.PATCH)
+	public String changeValue(@RequestBody String valueBody, @PathVariable String accountId) {
 		
+		ObjectMapper mapper = new ObjectMapper();
+		Map<String, String> body = null;
+		
+		try {
+			
+			body = mapper.readValue(valueBody, Map.class);
+			
+		} catch (JsonProcessingException e1) {
+			e1.printStackTrace();
+		}
+		String value = "";
+
+		try {
+			if (body.containsKey("name")) {
+				value = body.get("name");
+				db.changeValue(accountId, value, "name");
+			} else {
+				value = body.get("surname");
+				db.changeValue(accountId, value, "surname");
+			}
+
+		} catch (SQLException e) {
+
+			System.out.println(e.getMessage());
+			return "Errore";
+		}
+
+		return "Successo";
 	}
 }

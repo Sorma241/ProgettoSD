@@ -59,7 +59,8 @@ public class Account {
 		
 	}
 	
-	public String getAccountId(){
+	//returnId
+	public String getAccountID(){
 		return accountId;
 	}
 	
@@ -77,6 +78,10 @@ public class Account {
 	
 	public List<Transaction> getTransactions() {
 		return transactions;
+	}
+	
+	public void setTransactions(List<Transaction> t) {
+		this.transactions = t;
 	}
 
 	public void setBalance(double balance) {
