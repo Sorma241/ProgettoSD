@@ -12,7 +12,7 @@
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
         <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.5/dist/umd/popper.min.js" integrity="sha384-Xe+8cL9oJa6tN/veChSP7q+mnSPaj5Bcu9mPX5F5xIGE0DVittaqT5lorf0EI7Vk" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.min.js" integrity="sha384-kjU+l4N0Yf4ZOJErLsIcvOU2qSb74wXpOhqTvwVx3OElZRweTnQ6d31fXEoRD1Jy" crossorigin="anonymous"></script>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        
 
         <style>
 
@@ -26,59 +26,14 @@
     </head>
     <body>
 
-        <script>
-
-            function loadAllAccount(){
-
-                var xhttp = new XMLHttpRequest();
-
-                xhttp.onreadystatechange = function() {
-                    if (xhttp.readyState == 4){
-                        
-                        console.log(xhttp.responseText);
-                        var result = JSON.parse(xhttp.responseText);
-                        
-                        for (let i = 0;  i < result.lengt; i++) {
-                            var account = result[i];
-                            document.getElementById("allAccountTable").innerHTML = '<tr><td>'+account.acountId+'</td><td>'+account.name+'</td><td>'+account.surname+'</td><td>'+account.balance+'</td></tr>';
-                            
-                        }
-
-                    }
-                };
-
-                xhttp.open("GET", "http://localhost:8080/api/account");
-                xhttp.send();
-
-
-            }
-            
-            $(document).ready(function(){
-                loadAllAccount();
-            });
-
-        </script>
+        
         
         <div class="container">
 
             
 
-            <input type="text" placeholder="id account"></input><br><br>
-            <button type = "button" class="btn btn-primary">CONFERMA</button>
-
-            
-            <br><br>
-            <div class = "allAccountContainer">
-                <h3>Account list</h3><br><br>
-                <table class="table" id="allAccountTable">
-                    <tr>
-                        <th>Account Id</th>
-                        <th>Name</th>
-                        <th>Surname</th>
-                        <th>Balance</th>
-                    </tr>
-                </table>
-            </div>
+            <input type="text" placeholder="id account" id="accountIdTB"></input><br><br>
+            <button type = "button" class="btn btn-primary" id="cercaIdButton">CONFERMA</button>
 
             <div class="resultContainer" >
 
@@ -104,6 +59,39 @@
         </div>
 
         
+        <script>
+
+            function getResult(url, method){
+
+                var xhttp = new XMLHttpRequest();
+
+                xhttp.onreadystatechange = function(){
+                    if(xhttp.readyState == 4 && xhttp.status == 200){
+                        return xhttp.responseText;
+                    }
+                };
+
+                xhttp.open(method, url);
+                xhttp.send();
+            }
+
+            var accountId = document.getElementById("accountIdTB");
+            document.getElementById("cercaIdButton").addEventListener("click", function(){
+                console.log(accountId.value);
+                var url = "http://localhost:8080/api/account/" + accountId.value;
+                method = "GET"
+                var result = getResult(url, method);
+
+                if(result != null){
+                    document.getElementById("resultContainer").style.visibility = visible;
+                }
+            });
+            
+            
+            
+           
+
+        </script>
         
     </body>
 </html>
