@@ -9,23 +9,42 @@ import java.util.List;
 
 public class Database {
 
+	
+	
 	private Connection connect() {
 
-		Connection c = null;
+		Connection conn = null;
 
 		String url = "jdbc:sqlite:prova.db";
 
 		try {
 			
 			Class.forName("org.sqlite.JDBC");
-			c = DriverManager.getConnection(url);
+			conn = DriverManager.getConnection(url);
 			
 		} catch (Exception e) {
 
 			e.printStackTrace();
 		}
+		
+		return conn;
 
-		return c;
+		
+	}
+	
+	private void endConnection(Connection c) {
+		
+		try {
+			if(!c.isClosed()) {
+				
+				c.close();
+			}
+		} catch (SQLException e) {
+			
+			
+			e.printStackTrace();
+		}
+		
 	}
 
 	public void addAccount(String name, String surname, String accountId) throws SQLException {
@@ -33,12 +52,14 @@ public class Database {
 		String sql = "INSERT INTO Account(accountId, name, surname, balance) VALUES(?,?,?,0)";
 
 		Connection conn = this.connect();
-
+		
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 		pstmt.setString(1, accountId);
 		pstmt.setString(2, name);
 		pstmt.setString(3, surname);
 		pstmt.executeUpdate();
+		
+		endConnection(conn);
 	}
 	
 	public List<Account> returnAllAccounts() throws SQLException {
@@ -58,23 +79,28 @@ public class Database {
 			
 		}
 		
+		endConnection(conn);
 		return accountList;
+		
 		
 	}
 	
 	public void deleteAccount(String id) throws SQLException {
 		
-		String sql = "DELETE FROM Account WHERE AccountId = '" + id + "'";
+		String sql = "DELETE FROM Account WHERE accountId = '" + id + "'";
 		
 		Connection conn = this.connect();
 		
 		Statement st = conn.createStatement();
 		st.executeUpdate(sql);
 		
+		endConnection(conn);
+		
 	}
 	
 	public Account returnAccount(String id) throws SQLException {
 		String sql = "SELECT * FROM Account WHERE accountId = '" + id + "'";
+		
 		Connection conn = this.connect();
 		
 		Statement st = conn.createStatement();
@@ -82,6 +108,7 @@ public class Database {
 		
 		Account resuls = new Account(rs.getString("name"), rs.getString("surname"), rs.getString("accountId"),rs.getDouble("balance"));
 		
+		endConnection(conn);
 		return resuls;
 	}
 	
@@ -102,7 +129,21 @@ public class Database {
 			
 		}
 		
+		endConnection(conn);
 		return allTransfer;
+	}
+	
+	public void changeBalance(String accountId, double amount) throws SQLException {
+		
+		String sql = "UPDATE Account SET balance = ((SELECT balance FROM Account AS a WHERE a.accountId = '"+ accountId + "') + "+ amount +")"
+				+ " WHERE accountId = '"+ accountId +"';";
+		
+		Connection conn = this.connect();
+		
+		Statement st = conn.createStatement();
+		st.executeUpdate(sql);
+		
+		endConnection(conn);
 	}
 
 }

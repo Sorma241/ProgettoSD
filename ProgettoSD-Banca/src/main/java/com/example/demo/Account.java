@@ -71,6 +71,18 @@ public class Account {
 		return surname;
 	}
 	
+	public double getBalance() {
+		return balance;
+	}
+	
+	public List<Transaction> getTransactions() {
+		return transactions;
+	}
+
+	public void setBalance(double balance) {
+		this.balance = balance;
+	}
+	
 	
 	
 	

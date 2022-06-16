@@ -50,7 +50,7 @@ public class ManageBanca {
 
 		} catch (SQLException e) {
 
-			System.out.println("Errore sistema: " + e.getCause());
+			System.out.println("Errore sistema: " + e.getMessage());
 		}
 
 		return risultato;
@@ -110,5 +110,30 @@ public class ManageBanca {
 		}
 
 		return ac;
+	}
+	
+	
+	@RequestMapping(value = "/api/account/{accountId}", method = RequestMethod.POST)
+	public String deposit(@RequestBody String amount, @PathVariable String accountId) {
+		
+		Map<String, String> body = parseBody(amount);
+		double operationAmount = Double.parseDouble(body.get("amount"));
+		
+		
+		 try {
+			db.changeBalance(accountId, operationAmount);
+			
+		} catch (SQLException e) {
+			
+			System.out.println(e.getMessage());
+			return "Errore";
+		}
+		 
+		 
+		 return "Successo";
+		
+		
+		
+		
 	}
 }
