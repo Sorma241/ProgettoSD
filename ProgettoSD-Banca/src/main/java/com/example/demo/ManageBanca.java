@@ -4,8 +4,12 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,6 +21,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ser.FilterProvider;
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 
 @RestController
 public class ManageBanca {
@@ -45,9 +52,11 @@ public class ManageBanca {
 	}
 
 	@RequestMapping("/api/account")
-	public List<Account> returnAllAccount() {
+	public MappingJacksonValue returnAllAccount() {
 
 		List<Account> risultato = null;
+	    SimpleBeanPropertyFilter filter = SimpleBeanPropertyFilter.filterOutAllExcept("accountID", "name", "surname", "balance", "transactions");
+	    FilterProvider filters = new SimpleFilterProvider().addFilter("AccountFilter", filter);
 
 		try {
 
@@ -57,8 +66,11 @@ public class ManageBanca {
 
 			System.out.println("Errore sistema: " + e.getMessage());
 		}
+		
+		 MappingJacksonValue mapping = new MappingJacksonValue(risultato);
+         mapping.setFilters(filters);
 
-		return risultato;
+		return mapping;
 	}
 
 	@RequestMapping(value = "/api/account", method = RequestMethod.POST)
@@ -101,8 +113,12 @@ public class ManageBanca {
 	}
 
 	@RequestMapping("/api/account/{accountId}")
-	public Account returnAccount(@PathVariable String accountId) {
+	public HttpEntity<MappingJacksonValue> returnAccount(@PathVariable String accountId) {
 		
+	    SimpleBeanPropertyFilter filter = SimpleBeanPropertyFilter.filterOutAllExcept("name", "surname", "balance", "transactions");
+	    FilterProvider filters = new SimpleFilterProvider().addFilter("AccountFilter", filter);
+	    
+		HttpHeaders header = new HttpHeaders();
 		Account ac = null;
 
 		try {
@@ -113,8 +129,30 @@ public class ManageBanca {
 
 			System.out.println("Errore sistema: " + e.getCause());
 		}
+		
+		 MappingJacksonValue mapping = new MappingJacksonValue(ac);
+         mapping.setFilters(filters);
 
-		return ac;
+		header.add("X-Sistema-Bancario", ac.getName() + ";" + ac.getSurname());
+		
+		return new HttpEntity<MappingJacksonValue>(mapping, header);
+	}
+	
+	@RequestMapping(value = "/api/account/{accountId}", method = RequestMethod.HEAD)
+	public HttpEntity<Account> returnAccountHead(@PathVariable String accountId) {
+		
+		HttpHeaders header = new HttpHeaders();
+		Account ac = null;
+
+		try {
+
+			ac = db.returnAccount(accountId);
+		} catch (SQLException e) {
+			System.out.println("Errore sistema: " + e.getCause());
+		}
+
+		header.add("X-Sistema-Bancario", ac.getName() + ";" + ac.getSurname());
+		return new HttpEntity<Account>(header);
 	}
 
 	@RequestMapping(value = "/api/account/{accountId}", method = RequestMethod.POST)

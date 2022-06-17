@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonFilter;
 
+@JsonFilter("AccountFilter")
 public class Account {
 
 	private String name;
@@ -15,8 +15,6 @@ public class Account {
 	private String accountId;
 	private double balance;
 	private List<Transaction> transactions;
-	
-
 	
 	
 	public Account(String name, String surname) {
