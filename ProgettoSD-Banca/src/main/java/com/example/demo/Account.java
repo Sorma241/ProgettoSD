@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Account {
 
 	private String name;
@@ -59,7 +62,6 @@ public class Account {
 		
 	}
 	
-	//returnId
 	public String getAccountID(){
 		return accountId;
 	}

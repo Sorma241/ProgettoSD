@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -100,13 +102,13 @@ public class ManageBanca {
 
 	@RequestMapping("/api/account/{accountId}")
 	public Account returnAccount(@PathVariable String accountId) {
+		
 		Account ac = null;
 
 		try {
 
 			ac = db.returnAccount(accountId);
 			ac.setTransactions(db.returnTransferAccount(accountId));
-
 		} catch (SQLException e) {
 
 			System.out.println("Errore sistema: " + e.getCause());
@@ -122,15 +124,13 @@ public class ManageBanca {
 		double operationAmount = Double.parseDouble(body.get("amount"));
 
 		try {
-			db.changeBalance(accountId, operationAmount);
+			return db.changeBalance(accountId, operationAmount);
 
 		} catch (SQLException e) {
 
 			System.out.println(e.getMessage());
 			return "Errore";
 		}
-
-		return "Successo";
 	}
 
 	@RequestMapping(value = "/api/account/{accountId}", method = RequestMethod.PUT)

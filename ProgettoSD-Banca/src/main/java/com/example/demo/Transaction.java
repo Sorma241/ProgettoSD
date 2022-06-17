@@ -1,30 +1,75 @@
 package com.example.demo;
 
-import java.sql.SQLException;
 import java.util.Date;
+import java.util.UUID;
 
 public class Transaction {
 	
 	private String id_transfer;
-	private Account from;
-	private Account to;
+	private String from;
+	private String to;
 	private Date date;
 	private double amount;
 	
-	public Transaction(String from, String to, String id, Date date, double amount) {
+	public Transaction(String id, String from, String to, Date date, double amount) {
 		this.id_transfer = id;
-		
-		try {
-			this.from = new Database().returnAccount(from);
-			this.to = new Database().returnAccount(to);
-		} catch (SQLException e) {
-			
-			e.printStackTrace();
-		}
-		
+		this.from = from;
+		this.to = to;
 		this.date = date;
 		this.amount = amount;
-		
 	}
+	
+	public Transaction(String from, String to, Date date, double amount) {
+		this.from = from;
+		this.to = to;
+		this.date = date;
+		this.amount = amount;
+		this.id_transfer = createUUID();
+	}
+	
+	public static String createUUID() {
+		UUID uuid = UUID.randomUUID();
+        String uuidAsString = uuid.toString();
+
+        return uuidAsString;
+	}
+
+	public String getId_transfer() {
+		return id_transfer;
+	}
+
+	public String getFrom() {
+		return from;
+	}
+
+	public void setFrom(String from) {
+		this.from = from;
+	}
+
+	public String getTo() {
+		return to;
+	}
+
+	public void setTo(String to) {
+		this.to = to;
+	}
+
+	public Date getDate() {
+		return date;
+	}
+
+	public void setDate(Date date) {
+		this.date = date;
+	}
+
+	public double getAmount() {
+		return amount;
+	}
+
+	public void setAmount(double amount) {
+		this.amount = amount;
+	}
+	
+	
 	
 }

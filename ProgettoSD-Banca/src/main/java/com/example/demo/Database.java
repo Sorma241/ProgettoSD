@@ -2,8 +2,11 @@ package com.example.demo;
 
 
 import java.sql.*;
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.TimeZone;
 
 
 
@@ -106,14 +109,15 @@ public class Database {
 		Statement st = conn.createStatement();
 		ResultSet rs = st.executeQuery(sql);
 		
-		Account resuls = new Account(rs.getString("name"), rs.getString("surname"), "", rs.getDouble("balance"));
+		Account resuls = new Account(rs.getString("name"), rs.getString("surname"), rs.getString("accountId"), rs.getDouble("balance"));
 		
 		endConnection(conn);
 		return resuls;
 	}
 	
 	public List<Transaction> returnTransferAccount(String id) throws SQLException {
-		String sql = "SELECT t.id_transfer, t.from_account, t.to_account, t.transfer_date, t.amount FROM Account AS a, Transfer AS t WHERE a.accountId = t.from_account AND accountId = '" + id + "'";
+		String sql = "SELECT t.id_transfer, t.from_account, t.to_account, t.transfer_date, t.amount FROM Account AS a, Transfer AS t WHERE a.accountId = t.from_account AND accountId = '" + id 
+				+ "' ORDER BY t.transfer_date";
 		
 		Connection conn = this.connect();
 		
@@ -123,8 +127,9 @@ public class Database {
 		List<Transaction> allTransfer = new ArrayList<>();
 		while(rs.next()) {
 			
-			Transaction trans = new Transaction(rs.getString("from_account"), rs.getString("to_account"), rs.getString("id_transfer"), rs.getDate("transfer_date"), rs.getDouble("amount"));
-			
+			Transaction trans = new Transaction(rs.getString("id_transfer"), rs.getString("from_account"), rs.getString("to_account"), 
+					rs.getTimestamp("transfer_date", new GregorianCalendar()), rs.getDouble("amount"));
+			System.out.println(trans.getDate());
 			allTransfer.add(trans);
 			
 		}
@@ -133,21 +138,47 @@ public class Database {
 		return allTransfer;
 	}
 	
-	public void changeBalance(String accountId, double amount) throws SQLException {
+	public String changeBalance(String accountId, double amount) throws SQLException {
 		
-		String sql = "UPDATE Account SET balance = ((SELECT balance FROM Account AS a WHERE a.accountId = '"+ accountId + "') + "+ amount +")"
-				+ " WHERE accountId = '"+ accountId +"';";
+		String result = "";
+		String oldBalanceSQL = "SELECT balance FROM Account a WHERE a.accountId = '"+ accountId + "';";
 		
 		Connection conn = this.connect();
-		
 		Statement st = conn.createStatement();
-		st.executeUpdate(sql);
+		double oldBalance = st.executeQuery(oldBalanceSQL).getDouble("balance");
+		double newBalance = oldBalance + amount;
 		
+		if(newBalance < 0) {
+			result = "Errore saldo";
+		}else {
+			String sql = "UPDATE Account SET balance = '" + newBalance + " 'WHERE accountId = '"+ accountId +"';";
+			st.executeUpdate(sql);
+			result = "Successo saldo";
+			addTransaction(accountId, accountId, amount);
+		}	
 		endConnection(conn);
+		
+		return result;
 	}
 	
-	public void changeValue(String accountId, String name, String parameter) throws SQLException {
-		String sql = "UPDATE Account SET '" + parameter + "' = " + "'" + name + "' WHERE accountId = '"+ accountId + "'";
+	public void addTransaction (String id_from, String id_to, double amount) throws SQLException {
+		String sql = "INSERT INTO Transfer(id_transfer, from_account, to_account, transfer_date, amount) VALUES(?,?,?, datetime('now','localtime'), ?)";
+
+		Connection conn = this.connect();
+		
+		PreparedStatement pstmt = conn.prepareStatement(sql);
+		pstmt.setString(1, Transaction.createUUID());
+		pstmt.setString(2, id_from);
+		pstmt.setString(3, id_to);
+		pstmt.setDouble(4, amount);
+		pstmt.executeUpdate();
+		
+		endConnection(conn);
+		
+	}
+	
+	public void changeValue(String accountId, String value, String parameter) throws SQLException {
+		String sql = "UPDATE Account SET '" + parameter + "' = " + "'" + value + "' WHERE accountId = '"+ accountId + "'";
 		
 		Connection conn = this.connect();
 		
