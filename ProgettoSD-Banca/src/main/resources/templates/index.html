@@ -16,10 +16,12 @@
 
         <style>
 
-            .resultContainer{
+            #resultContainer{
                 visibility: hidden;
             }
-
+            #errorContainer{
+                visibility: hidden;
+            }
             
         </style>
 
@@ -35,25 +37,22 @@
             <input type="text" placeholder="id account" id="accountIdTB"></input><br><br>
             <button type = "button" class="btn btn-primary" id="cercaIdButton">CONFERMA</button>
 
-            <div class="resultContainer" >
+            <div class="container" id="resultContainer" >
 
-                <h1>Risultato ricerca</h1><br><br>
+                <br><br><h1>Risultato ricerca</h1><br><br>
 
-                <label>id:</label>:</label><label id="IdAccount"></label><br>
-                <label>name:</label><label id="name"></label><br>
-                <label>surname:</label><label id="surname"></label><br>
-                <label>balance:</label><label id="balance"></label><br>
-                <h3>Transfer list</h3> 
+                <label>id:</label><label id="IdAccount"> </label><br>
+                <label>name:</label><label id="name"> </label><br>
+                <label>surname:</label><label id="surname"> </label><br>
+                <label>balance:</label><label id="balance"> </label><br>
+                <h3>Transfer list</h3><br> 
 
-                <table class="table">
-                    <tr>
-                        <th>From</th>
-                        <th>To</th>
-                        <th>Date</th>
-                        <th>Amount</th>
-                    </tr>
-                </table>
+                <table class="table" id = "transactionTable"></table>
 
+            </div>
+
+            <div class="container" id="errorContainer">
+                <h4>Errore</h4>
             </div>
 
         </div>
@@ -61,34 +60,85 @@
         
         <script>
 
-            function getResult(url, method){
+            function getResult(url, method, fun){
 
                 var xhttp = new XMLHttpRequest();
 
                 xhttp.onreadystatechange = function(){
-                    if(xhttp.readyState == 4 && xhttp.status == 200){
-                        return xhttp.responseText;
+                    if(xhttp.readyState == 4){
+                       
+                        var response = xhttp.responseText;
+                        fun(response);
+
                     }
                 };
 
-                xhttp.open(method, url);
+                console.log(method);
+                console.log(url);
+                xhttp.open(method, url, true);
                 xhttp.send();
             }
 
             var accountId = document.getElementById("accountIdTB");
             document.getElementById("cercaIdButton").addEventListener("click", function(){
-                console.log(accountId.value);
+                
                 var url = "http://localhost:8080/api/account/" + accountId.value;
                 method = "GET"
-                var result = getResult(url, method);
-
-                if(result != null){
-                    document.getElementById("resultContainer").style.visibility = visible;
-                }
+                
+                
+                getResult(url, method, getAccount);
+                
             });
             
             
-            
+            function getAccount(response){
+                
+                if(response != null){
+                    document.getElementById("resultContainer").style.visibility = "visible";
+
+                    console.log(response);
+                    var result = JSON.parse(response);
+                    console.log(result);
+                    document.getElementById("IdAccount").innerHTML = result.accountId;
+                    document.getElementById("name").innerHTML = result.name;
+                    document.getElementById("surname").innerHTML = result.surname;
+                    document.getElementById("balance").innerHTML = result.balance;
+
+                    var trans = result.transactions;
+                    var inner = "<tr><th>ID</th><th>From</th><th>To</th><th>Date</th><th>Amount</th></tr>";
+                    
+
+                    for (let i = 0; i < trans.length; i++) {
+                        
+                        if(i == 0){
+                            inner = inner +"<th>"
+                        }else{
+                            inner = inner+ "<tr>"
+                        }
+
+                        if(trans[i].from === trans[i].to){
+                            inner = inner + "<td>"+trans[i].id_transfer+"</td><td>"+trans[i].from+"</td>"
+                            + "<td></td><td>"+trans[i].date+"</td><td>"+trans[i].amount+"</td>";
+                        }else{
+                            inner = inner + "<td>"+trans[i].id_transfer+"</td><td>"+trans[i].from+"</td>"
+                            + "<td>"+trans[i].to +"</td><td>"+trans[i].date+"</td><td>"+trans[i].amount+"</td>";
+                        }
+                        
+                        if(i == 0){
+                            inner = inner + "</th>"
+                        }else{
+                            inner = inner + "</tr>"
+                        }
+                        
+                    }
+                    
+                    document.getElementById("transactionTable").innerHTML = inner;
+
+                }else{
+                    document.getElementById("errorContainer").style.visibility = "visible";
+                }
+
+            }
            
 
         </script>
