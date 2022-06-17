@@ -32,13 +32,14 @@
         
         <div class="container">
 
-            
-
+            <br>
             <input type="text" placeholder="id account" id="accountIdTB"></input><br><br>
             <button type = "button" class="btn btn-primary" id="cercaIdButton">CONFERMA</button>
+            
 
             <div class="container" id="resultContainer" >
 
+            
                 <br><br><h1>Risultato ricerca</h1><br><br>
 
                 <label>id:</label><label id="IdAccount"> </label><br>
@@ -52,7 +53,7 @@
             </div>
 
             <div class="container" id="errorContainer">
-                <h4>Errore</h4>
+                <label id="errMsg">Errore</label>
             </div>
 
         </div>
@@ -73,8 +74,6 @@
                     }
                 };
 
-                console.log(method);
-                console.log(url);
                 xhttp.open(method, url, true);
                 xhttp.send();
             }
@@ -82,11 +81,19 @@
             var accountId = document.getElementById("accountIdTB");
             document.getElementById("cercaIdButton").addEventListener("click", function(){
                 
-                var url = "http://localhost:8080/api/account/" + accountId.value;
-                method = "GET"
+                var value = accountId.value;
                 
+                if(value != ""){
+
+                    var url = "http://localhost:8080/api/account/" + value;
+                    method = "GET"
+                    getResult(url, method, getAccount);
+                }else{
+
+                    document.getElementById("errorContainer").style.visibility = "visible";
+                    document.getElementById("errMsg").innerHTML = "inserisci un id!";
+                }
                 
-                getResult(url, method, getAccount);
                 
             });
             
