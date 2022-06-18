@@ -162,7 +162,19 @@ public class ManageBanca {
 		double operationAmount = Double.parseDouble(body.get("amount"));
 
 		try {
-			return db.changeBalance(accountId, operationAmount);
+			 
+			if(db.checkBalance(accountId, operationAmount)) {
+				
+				if(db.changeBalance(accountId, operationAmount)) {
+					 return "Success";
+				 }else {
+					 return "Error";
+				 }
+			}else {
+				return "Error balance";
+			}
+			 
+			 
 
 		} catch (SQLException e) {
 
@@ -234,4 +246,43 @@ public class ManageBanca {
 
 		return "Successo";
 	}
+	
+	
+	@RequestMapping(value = "/api/transfer", method = RequestMethod.POST)
+	public String makeTransfer(@RequestBody String transBody) {
+		
+		Map<String, String> body = parseBody(transBody);
+		boolean fromBalanceUpd = false, toBalanceUpd = false,isTransactionAdded = false;
+		
+		try {
+			
+			if (db.checkBalance(body.get("from"), -Double.parseDouble(body.get("amount")))) {
+				
+				fromBalanceUpd = db.changeBalance(body.get("from"), -Double.parseDouble(body.get("amount")));
+				toBalanceUpd = db.changeBalance(body.get("to"), Double.parseDouble(body.get("amount")));
+				
+				isTransactionAdded = db.addTransaction(body.get("from"), body.get("to"), Double.parseDouble(body.get("amount")));
+				
+				if(isTransactionAdded) {
+					return "Success";
+				}else {
+					return "Error";
+				}
+			}else {
+				return "Error Balance";
+			}
+			
+			
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+			return "Error";
+			
+			
+		}
+		
+		
+	}
+	
+	
+	
 }

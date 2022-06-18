@@ -2,14 +2,10 @@ package com.example.demo;
 
 
 import java.sql.*;
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.TimeZone;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 
 
@@ -141,32 +137,47 @@ public class Database {
 		return allTransfer;
 	}
 	
-	public String changeBalance(String accountId, double amount) throws SQLException {
+	public boolean changeBalance(String accountId, double amount) throws SQLException {
 		
-		String result = "";
 		String oldBalanceSQL = "SELECT balance FROM Account a WHERE a.accountId = '"+ accountId + "';";
+	
+		Connection conn = this.connect();
+		Statement st = conn.createStatement();
+		
+		double oldBalance = st.executeQuery(oldBalanceSQL).getDouble("balance");
+		double newBalance = amount + oldBalance;
+		String sql = "UPDATE Account SET balance = '" + newBalance  + " 'WHERE accountId = '"+ accountId +"';";
+		
+		st.executeUpdate(sql);
+		addTransaction(accountId, accountId, amount);
+		
+		endConnection(conn);
+		
+		return true;
+	}
+	
+	public boolean checkBalance(String id, double amount) throws SQLException {
+		String sql = "SELECT balance FROM Account a WHERE a.accountId = '"+ id + "';";
 		
 		Connection conn = this.connect();
 		Statement st = conn.createStatement();
-		double oldBalance = st.executeQuery(oldBalanceSQL).getDouble("balance");
+		double oldBalance = st.executeQuery(sql).getDouble("balance");
 		double newBalance = oldBalance + amount;
-		
-		if(newBalance < 0) {
-			result = "Errore saldo";
-		}else {
-			String sql = "UPDATE Account SET balance = '" + newBalance + " 'WHERE accountId = '"+ accountId +"';";
-			st.executeUpdate(sql);
-			result = "Successo saldo";
-			addTransaction(accountId, accountId, amount);
-		}	
+		System.out.println(newBalance);
 		endConnection(conn);
 		
-		return result;
+		if(newBalance < 0) {
+			return false;
+		}else {
+			return true;
+		}
+		
+		
 	}
 	
-	public void addTransaction (String id_from, String id_to, double amount) throws SQLException {
+	public boolean addTransaction (String id_from, String id_to, double amount) throws SQLException {
 		String sql = "INSERT INTO Transfer(id_transfer, from_account, to_account, transfer_date, amount) VALUES(?,?,?, datetime('now','localtime'), ?)";
-
+		
 		Connection conn = this.connect();
 		
 		PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -177,7 +188,7 @@ public class Database {
 		pstmt.executeUpdate();
 		
 		endConnection(conn);
-		
+		return true;
 	}
 	
 	public void changeValue(String accountId, String value, String parameter) throws SQLException {

@@ -74,8 +74,8 @@
                 if(from != "" && to != "" && amount != ""){
                     var method = "POST";
                     var url = "http://localhost:8080/api/transfer";
-
-                    getResult(method, url, checkResponse, from, to, amount);
+                    console.log(amount)
+                    getResult(url, method, checkResponse, from, to, amount);
                 }else{
                     var res = document.getElementById("resultBox");
                     res.style.visibility = "visible";
