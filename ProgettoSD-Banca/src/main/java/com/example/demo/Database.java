@@ -170,9 +170,21 @@ public class Database {
 			return false;
 		}else {
 			return true;
-		}
+		}	
+	}
+	
+	public Transaction returnTransaction(String id) throws SQLException {
+		String sql = "SELECT * FROM Transfer t WHERE id_transfer = '"+ id + "';";
 		
+		Connection conn = this.connect();
+		Statement st = conn.createStatement();
+		ResultSet rs = st.executeQuery(sql);
 		
+		Transaction resuls = new Transaction(rs.getString("id_transfer"), rs.getString("from_account"), rs.getString("to_account"), 
+				rs.getTimestamp("transfer_date", new GregorianCalendar()), rs.getDouble("amount"));
+		endConnection(conn);
+		
+		return resuls;
 	}
 	
 	public boolean addTransaction (String id_from, String id_to, double amount) throws SQLException {

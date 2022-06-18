@@ -260,14 +260,21 @@ public class ManageBanca {
 		Map<String, String> body = parseBody(transBody);
 		boolean fromBalanceUpd = false, toBalanceUpd = false,isTransactionAdded = false;
 		
+		String from = body.get("from");
+		String to = body.get("to");
+		double amount = Double.parseDouble(body.get("amount"));
+		
 		try {
 			
-			if (db.checkBalance(body.get("from"), -Double.parseDouble(body.get("amount")))) {
+			if (db.checkBalance(from, -amount)) {
 				
-				fromBalanceUpd = db.changeBalance(body.get("from"), -Double.parseDouble(body.get("amount")));
-				toBalanceUpd = db.changeBalance(body.get("to"), Double.parseDouble(body.get("amount")));
+				fromBalanceUpd = db.changeBalance(from, -amount);
+				System.out.println(fromBalanceUpd);
+				toBalanceUpd = db.changeBalance(to, amount);
+				System.out.println(toBalanceUpd);
 				
-				isTransactionAdded = db.addTransaction(body.get("from"), body.get("to"), Double.parseDouble(body.get("amount")));
+				isTransactionAdded = db.addTransaction(from, to, amount);
+				System.out.println(isTransactionAdded);
 				
 				if(isTransactionAdded) {
 					return "Success";
@@ -282,13 +289,40 @@ public class ManageBanca {
 		} catch (SQLException e) {
 			System.out.println(e.getMessage());
 			return "Error";
-			
-			
+				
 		}
-		
-		
 	}
 	
-	
+	@RequestMapping(value = "/api/divert", method = RequestMethod.POST)
+	public String makeDivert(@RequestBody String transBody) {
+		
+		Map<String, String> body = parseBody(transBody);
+		boolean fromBalanceUpd = false, toBalanceUpd = false,isTransactionAdded = false;
+		
+		try {
+			Transaction trans = db.returnTransaction(body.get("transfertID"));
+			if (db.checkBalance(trans.getTo(), trans.getAmount())) {
+				
+				fromBalanceUpd = db.changeBalance(trans.getTo(), -trans.getAmount());
+				toBalanceUpd = db.changeBalance(trans.getFrom(), trans.getAmount());
+				
+				isTransactionAdded = db.addTransaction(trans.getTo(), trans.getFrom(), trans.getAmount());
+				
+				if(isTransactionAdded) {
+					return "Success";
+				}else {
+					return "Error";
+				}
+			}else {
+				return "Error Balance";
+			}
+			
+			
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+			return "Error";
+				
+		}
+	}
 	
 }
