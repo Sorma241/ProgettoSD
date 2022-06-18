@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Transaction</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.5/dist/umd/popper.min.js" integrity="sha384-Xe+8cL9oJa6tN/veChSP7q+mnSPaj5Bcu9mPX5F5xIGE0DVittaqT5lorf0EI7Vk" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.min.js" integrity="sha384-kjU+l4N0Yf4ZOJErLsIcvOU2qSb74wXpOhqTvwVx3OElZRweTnQ6d31fXEoRD1Jy" crossorigin="anonymous"></script>
+        
+        <style>
+
+            #resultBox{
+                visibility: hidden;
+            }
+        </style>
+
+    </head>
+    <body>
+
+        <div class="container" id="">
+
+            <div class="container" id = "searchBox">
+                <br>
+                <input type="text" placeholder="mittente" id="fromTB"></input><br>
+                <input type="text" placeholder="destinatario" id="toTB"></input><br>
+                <input type="text" placeholder="importo" id="amountTB"></input><br><br>
+                <button type = "button" class="btn btn-primary" id="ConfirmButton">CONFERMA</button>
+            </div>
+            <br><br>
+            <div class="container" id = "resultBox">
+                <label id="resultLabel"></label>
+            </div>
+
+        </div>
+
+        
+
+        <script>
+            function getResult(url, method, fun, from, to, amount){
+
+                var xhttp = new XMLHttpRequest();
+
+                xhttp.onreadystatechange = function(){
+                    if(xhttp.readyState == 4){
+                    
+                        var response = xhttp.responseText;
+                        fun(response);
+
+                    }
+                };
+
+
+                var body = "from="+from+"&to="+to+"&amount="+amount;
+                xhttp.open(method, url, true);
+                xhttp.send(body);
+            }
+
+            function checkResponse(response){
+
+            }
+
+            document.getElementById("ConfirmButton").addEventListener("click", function(){
+                document.getElementById("resultBox").style.visibility = "visible";
+
+                var from =  document.getElementById("fromTB").value;
+                var to = document.getElementById("toTB").value;
+                var amount = document.getElementById("amountTB").value;
+
+                if(from != "" && to != "" && amount != ""){
+                    var method = "POST";
+                    var url = "http://localhost:8080/api/transfer";
+
+                    getResult(method, url, checkResponse, from, to, amount);
+                }else{
+                    var res = document.getElementById("resultBox");
+                    res.style.visibility = "visible";
+                    res.innerHTML = "inserisci tutti i dati!";
+                }
+
+               
+            });
+
+        </script>
+    </body>
+</html>

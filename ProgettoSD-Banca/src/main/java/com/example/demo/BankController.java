@@ -10,4 +10,9 @@ public class BankController {
     public String index() {
         return "index.html";
     }
+    
+    @RequestMapping("/transfer")
+    public String transfer() {
+        return "transfer.html";
+    }
 }

@@ -32,13 +32,14 @@
         
         <div class="container">
 
-            
-
+            <br>
             <input type="text" placeholder="id account" id="accountIdTB"></input><br><br>
             <button type = "button" class="btn btn-primary" id="cercaIdButton">CONFERMA</button>
+            
 
             <div class="container" id="resultContainer" >
 
+            
                 <br><br><h1>Risultato ricerca</h1><br><br>
 
                 <label>id:</label><label id="IdAccount"> </label><br>
@@ -52,7 +53,7 @@
             </div>
 
             <div class="container" id="errorContainer">
-                <h4>Errore</h4>
+                <label id="errMsg">Errore</label>
             </div>
 
         </div>
@@ -73,32 +74,17 @@
                     }
                 };
 
-                console.log(method);
-                console.log(url);
                 xhttp.open(method, url, true);
                 xhttp.send();
             }
 
-            var accountId = document.getElementById("accountIdTB");
-            document.getElementById("cercaIdButton").addEventListener("click", function(){
-                
-                var url = "http://localhost:8080/api/account/" + accountId.value;
-                method = "GET"
-                
-                
-                getResult(url, method, getAccount);
-                
-            });
-            
-            
             function getAccount(response){
                 
                 if(response != null){
                     document.getElementById("resultContainer").style.visibility = "visible";
 
-                    console.log(response);
                     var result = JSON.parse(response);
-                    console.log(result);
+                    
                     document.getElementById("IdAccount").innerHTML = result.accountId;
                     document.getElementById("name").innerHTML = result.name;
                     document.getElementById("surname").innerHTML = result.surname;
@@ -139,6 +125,62 @@
                 }
 
             }
+
+            function checkId(id){
+
+                var characters = ['1','2','3','4','5','6','7','8','9','0','a','b','c','d','e','f'];
+
+                if(id.length != 20){
+                    return false;
+                }
+
+                for (let i = 0; i < id.length; i++) {
+                    
+                    var char = id.charAt(i);
+                    
+                    for (let j = 0; j < characters.length; j++) {
+                        
+                        if(char != characters[i]){
+                            return false;
+                        }
+                        
+                    }
+
+                }
+
+                return true;
+            }
+
+            var accountId = document.getElementById("accountIdTB");
+            document.getElementById("cercaIdButton").addEventListener("click", function(){
+                
+                var value = accountId.value;
+                
+
+                if(value != ""){
+
+                    var isIdValid = checkId(value);
+
+                    if(isIdValid){
+                        var url = "http://localhost:8080/api/account/" + value;
+                        method = "GET";
+                        getResult(url, method, getAccount);
+                    }else{
+                        document.getElementById("errorContainer").style.visibility = "visible";
+                        document.getElementById("errMsg").innerHTML = "formato id non valido!";
+                    }
+                    
+                }else{
+
+                    document.getElementById("errorContainer").style.visibility = "visible";
+                    document.getElementById("errMsg").innerHTML = "inserisci un id!";
+                }
+                
+                
+            });
+            
+            
+            
            
 
         </script>
