@@ -149,7 +149,7 @@ public class Database {
 		String sql = "UPDATE Account SET balance = '" + newBalance  + " 'WHERE accountId = '"+ accountId +"';";
 		
 		st.executeUpdate(sql);
-		addTransaction(accountId, accountId, amount);
+		
 		
 		endConnection(conn);
 		

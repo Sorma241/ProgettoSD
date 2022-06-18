@@ -128,27 +128,17 @@
 
             function checkId(id){
 
-                var characters = ['1','2','3','4','5','6','7','8','9','0','a','b','c','d','e','f'];
+                var re = /[0-9A-Fa-f]{20}/g;
 
-                if(id.length != 20){
+                if(re.test(id)) {
+                    re.lastIndex = 0;
+                   return true;
+                } else {
+                    re.lastIndex = 0;
                     return false;
                 }
 
-                for (let i = 0; i < id.length; i++) {
-                    
-                    var char = id.charAt(i);
-                    
-                    for (let j = 0; j < characters.length; j++) {
-                        
-                        if(char != characters[i]){
-                            return false;
-                        }
-                        
-                    }
-
-                }
-
-                return true;
+                
             }
 
             var accountId = document.getElementById("accountIdTB");

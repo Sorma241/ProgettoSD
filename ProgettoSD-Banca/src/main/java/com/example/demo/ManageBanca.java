@@ -166,7 +166,13 @@ public class ManageBanca {
 			if(db.checkBalance(accountId, operationAmount)) {
 				
 				if(db.changeBalance(accountId, operationAmount)) {
-					 return "Success";
+					
+					if(db.addTransaction(accountId, accountId, operationAmount)) {
+						return "Success";
+					}else {
+						return "Error";
+					}
+					
 				 }else {
 					 return "Error";
 				 }
