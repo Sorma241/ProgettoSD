@@ -17,8 +17,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
@@ -301,7 +299,7 @@ public class ManageBanca {
 		
 		try {
 			Transaction trans = db.returnTransaction(body.get("transfertID"));
-			if (db.checkBalance(trans.getTo(), trans.getAmount())) {
+			if (db.checkBalance(trans.getTo(), -trans.getAmount())) {
 				
 				fromBalanceUpd = db.changeBalance(trans.getTo(), -trans.getAmount());
 				toBalanceUpd = db.changeBalance(trans.getFrom(), trans.getAmount());
