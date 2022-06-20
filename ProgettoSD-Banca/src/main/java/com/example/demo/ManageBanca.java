@@ -120,18 +120,27 @@ public class ManageBanca {
 		Account ac = null;
 
 		try {
-
+			
 			ac = db.returnAccount(accountId);
+			
 			ac.setTransactions(db.returnTransferAccount(accountId));
+			
 		} catch (SQLException e) {
+			
+			if(e.getMessage() == "ResultSet closed") {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+			}
 
-			System.out.println("Errore sistema: " + e.getCause());
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 		}
 		
 		 MappingJacksonValue mapping = new MappingJacksonValue(ac);
          mapping.setFilters(filters);
-
-		header.add("X-Sistema-Bancario", ac.getName() + ";" + ac.getSurname());
+         
+         
+         header.add("X-Sistema-Bancario", ac.getName() + ";" + ac.getSurname());
+         
+		
 		
 		return new HttpEntity<MappingJacksonValue>(mapping, header);
 	}
@@ -285,6 +294,7 @@ public class ManageBanca {
 			
 			
 		} catch (SQLException e) {
+			
 			System.out.println(e.getMessage());
 			return "Error";
 				

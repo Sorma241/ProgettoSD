@@ -47,25 +47,45 @@
 
                 xhttp.onreadystatechange = function(){
                     if(xhttp.readyState == 4){
-                    
-                        var response = xhttp.responseText;
-                        fun(response);
-
+                        
+                        if(xhttp.status == 200){
+                            var response = xhttp.responseText;
+                            fun(response);
+                        }
+                        
                     }
                 };
-
 
                 var body = "from="+from+"&to="+to+"&amount="+amount;
                 xhttp.open(method, url, true);
                 xhttp.send(body);
             }
 
-            function checkResponse(response){
+            function checkResponse(response){    
+
+
+                if(response == "Success"){
+
+                    document.getElementById("resultBox").style.visibility = "visible";
+                    document.getElementById("resultLabel").innerHTML = "Account inserito";
+                    
+                }else if(response == "Error Balance"){
+
+                    document.getElementById("resultBox").style.visibility = "visible";
+                    document.getElementById("resultLabel").innerHTML = "Errore bilancio insufficiente"
+                }else {
+
+                    document.getElementById("resultBox").style.visibility = "visible";
+                    document.getElementById("resultLabel").innerHTML = "Errore del server";
+                }
+
 
             }
 
             document.getElementById("ConfirmButton").addEventListener("click", function(){
-                document.getElementById("resultBox").style.visibility = "visible";
+
+                document.getElementById("resultBox").style.visibility = "hidden";
+
 
                 var from =  document.getElementById("fromTB").value;
                 var to = document.getElementById("toTB").value;
@@ -76,10 +96,12 @@
                     var url = "http://localhost:8080/api/transfer";
                     console.log(amount)
                     getResult(url, method, checkResponse, from, to, amount);
+
+
                 }else{
-                    var res = document.getElementById("resultBox");
-                    res.style.visibility = "visible";
-                    res.innerHTML = "inserisci tutti i dati!";
+                   
+                    document.getElementById("resultBox").style.visibility = "visible";
+                    document.getElementById("resultLabel").innerHTML = "Inserisci tutti i dati"
                 }
 
                

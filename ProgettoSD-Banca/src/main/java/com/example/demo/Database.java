@@ -17,7 +17,7 @@ public class Database {
 
 		Connection conn = null;
 
-		String url = "jdbc:sqlite:prova.db";
+		String url = "jdbc:sqlite:BankDB.db";
 
 		try {
 			

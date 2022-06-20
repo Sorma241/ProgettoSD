@@ -42,10 +42,9 @@
             
                 <br><br><h1>Risultato ricerca</h1><br><br>
 
-                <label>id:</label><label id="IdAccount"> </label><br>
-                <label>name:</label><label id="name"> </label><br>
-                <label>surname:</label><label id="surname"> </label><br>
-                <label>balance:</label><label id="balance"> </label><br>
+                <label>name: </label><label id="name"> </label><br>
+                <label>surname: </label><label id="surname"> </label><br>
+                <label>balance: </label><label id="balance"> </label><br>
                 <h3>Transfer list</h3><br> 
 
                 <table class="table" id = "transactionTable"></table>
@@ -53,7 +52,7 @@
             </div>
 
             <div class="container" id="errorContainer">
-                <label id="errMsg">Errore</label>
+                <label id="errMsg"></label>
             </div>
 
         </div>
@@ -67,9 +66,15 @@
 
                 xhttp.onreadystatechange = function(){
                     if(xhttp.readyState == 4){
-                       
-                        var response = xhttp.responseText;
-                        fun(response);
+                        console.log(xhttp.status);
+                        if(xhttp.status == 200){
+                            var response = xhttp.responseText;
+                            fun(response);
+
+                        }else if(xhttp.status == 404){
+                            fun("404");
+                        }
+                        
 
                     }
                 };
@@ -80,92 +85,98 @@
 
             function getAccount(response){
                 
-                if(response != null){
+                if(response == "404"){
+
+                    document.getElementById("errorContainer").style.visibility = "visible";
+                    document.getElementById("errMsg").innerHTML = "ID non trovato";
+
+                }else if(response != null){
+
                     document.getElementById("resultContainer").style.visibility = "visible";
 
                     var result = JSON.parse(response);
                     
-                    document.getElementById("IdAccount").innerHTML = result.accountId;
                     document.getElementById("name").innerHTML = result.name;
                     document.getElementById("surname").innerHTML = result.surname;
                     document.getElementById("balance").innerHTML = result.balance;
 
                     var trans = result.transactions;
-                    var inner = "<tr><th>ID</th><th>From</th><th>To</th><th>Date</th><th>Amount</th></tr>";
+
                     
+
+                    var inner = "<tr><th>ID</th><th>From</th><th>To</th><th>Date</th><th>Amount</th></tr>";
+                
 
                     for (let i = 0; i < trans.length; i++) {
                         
-                        if(i == 0){
-                            inner = inner +"<th>"
-                        }else{
-                            inner = inner+ "<tr>"
-                        }
+                        
+                        if(i == trans.length-1){
 
-                        if(trans[i].from === trans[i].to){
-                            inner = inner + "<td>"+trans[i].id_transfer+"</td><td>"+trans[i].from+"</td>"
-                            + "<td></td><td>"+trans[i].date+"</td><td>"+trans[i].amount+"</td>";
+                            if(trans[i].from === trans[i].to){
+                                inner = inner + "<tr><th>"+trans[i].id_transfer+"</th><th>"+trans[i].from+"</th>"
+                                + "<th></th><th>"+trans[i].date+"</th><th>"+trans[i].amount+"</th></tr>";
+                            }else{
+                                inner = inner + "<tr><th>"+trans[i].id_transfer+"</th><th>"+trans[i].from+"</th>"
+                                + "<th>"+trans[i].to +"</th><th>"+trans[i].date+"</th><th>"+trans[i].amount+"</th></tr>";
+                            }
+
                         }else{
-                            inner = inner + "<td>"+trans[i].id_transfer+"</td><td>"+trans[i].from+"</td>"
-                            + "<td>"+trans[i].to +"</td><td>"+trans[i].date+"</td><td>"+trans[i].amount+"</td>";
+                            
+                            if(trans[i].from === trans[i].to){
+                                inner = inner + "<tr><td>"+trans[i].id_transfer+"</td><td>"+trans[i].from+"</td>"
+                                + "<td></td><td>"+trans[i].date+"</td><td>"+trans[i].amount+"</td></tr>";
+                            }else{
+                                inner = inner + "<tr><td>"+trans[i].id_transfer+"</td><td>"+trans[i].from+"</td>"
+                                + "<td>"+trans[i].to +"</td><td>"+trans[i].date+"</td><td>"+trans[i].amount+"</td></tr>";
+                            }
                         }
                         
-                        if(i == 0){
-                            inner = inner + "</th>"
-                        }else{
-                            inner = inner + "</tr>"
-                        }
+                        
+                        
                         
                     }
                     
                     document.getElementById("transactionTable").innerHTML = inner;
-
                 }else{
+
                     document.getElementById("errorContainer").style.visibility = "visible";
+                    document.getElementById("errMsg").innerHTML = "Errore server";
                 }
+
+                    
 
             }
 
             function checkId(id){
 
-                var re = /[0-9A-Fa-f]{20}/g;
-
-                if(re.test(id)) {
-                    re.lastIndex = 0;
-                   return true;
-                } else {
-                    re.lastIndex = 0;
+                if(/^[0-9A-F]{20}$/i.test(id)){
+                    
+                    return true;
+                }else{
+                    
                     return false;
-                }
-
+                } 
                 
             }
 
             var accountId = document.getElementById("accountIdTB");
             document.getElementById("cercaIdButton").addEventListener("click", function(){
                 
+                document.getElementById("errorContainer").style.visibility = "hidden";
+                document.getElementById("resultContainer").style.visibility = "hidden";
+
                 var value = accountId.value;
                 
+                var isIdValid = checkId(value);
 
-                if(value != ""){
-
-                    var isIdValid = checkId(value);
-
-                    if(isIdValid){
-                        var url = "http://localhost:8080/api/account/" + value;
-                        method = "GET";
-                        getResult(url, method, getAccount);
-                    }else{
-                        document.getElementById("errorContainer").style.visibility = "visible";
-                        document.getElementById("errMsg").innerHTML = "formato id non valido!";
-                    }
-                    
+                if(isIdValid){
+                    var url = "http://localhost:8080/api/account/" + value;
+                    method = "GET";
+                    getResult(url, method, getAccount);
                 }else{
-
                     document.getElementById("errorContainer").style.visibility = "visible";
-                    document.getElementById("errMsg").innerHTML = "inserisci un id!";
+                    document.getElementById("errMsg").innerHTML = "formato id non valido!";
                 }
-                
                 
             });
             
