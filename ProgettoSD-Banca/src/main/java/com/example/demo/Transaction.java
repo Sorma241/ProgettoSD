@@ -1,11 +1,9 @@
 package com.example.demo;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatTypes;
 
 public class Transaction {
 	
@@ -62,8 +60,6 @@ public class Transaction {
 	}
 
 	public Date getDate() {
-		
-		//SimpleDateFormat sdf = new SimpleDateFormat("DD/MM/YYYY hh:mm:ss");
 		return date;
 	}
 

@@ -128,7 +128,6 @@ public class Database {
 			
 			Transaction trans = new Transaction(rs.getString("id_transfer"), rs.getString("from_account"), rs.getString("to_account"), 
 					rs.getTimestamp("transfer_date", new GregorianCalendar()), rs.getDouble("amount"));
-			System.out.println(trans.getDate());
 			allTransfer.add(trans);
 			
 		}
@@ -163,7 +162,6 @@ public class Database {
 		Statement st = conn.createStatement();
 		double oldBalance = st.executeQuery(sql).getDouble("balance");
 		double newBalance = oldBalance + amount;
-		System.out.println(newBalance);
 		endConnection(conn);
 		
 		if(newBalance < 0) {

@@ -99,7 +99,7 @@ public class ManageBanca {
 		MappingJacksonValue mapping = new MappingJacksonValue(ac);
         mapping.setFilters(filters);
 
-        return new ResponseEntity<MappingJacksonValue>(mapping, HttpStatus.OK);
+        return new ResponseEntity<MappingJacksonValue>(mapping, HttpStatus.CREATED);
 	}
 
 	@RequestMapping(value = "/api/account", method = RequestMethod.DELETE)
@@ -152,7 +152,7 @@ public class ManageBanca {
 	}
 	
 	@RequestMapping(value = "/api/account/{accountId}", method = RequestMethod.HEAD)
-	public HttpEntity<Account> returnAccountHead(@PathVariable String accountId) {
+	public HttpEntity<String> returnAccountHead(@PathVariable String accountId) {
 		
 		HttpHeaders header = new HttpHeaders();
 		Account ac = null;
@@ -161,11 +161,12 @@ public class ManageBanca {
 
 			ac = db.returnAccount(accountId);
 		} catch (SQLException e) {
-			System.out.println("Errore sistema: " + e.getCause());
+			
+			return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 		header.add("X-Sistema-Bancario", ac.getName() + ";" + ac.getSurname());
-		return new HttpEntity<Account>(header);
+		return new HttpEntity<String>(header);
 	}
 
 	@RequestMapping(value = "/api/account/{accountId}", method = RequestMethod.POST)
@@ -196,8 +197,7 @@ public class ManageBanca {
 			 
 
 		} catch (SQLException e) {
-
-			System.out.println(e.getMessage());
+			
 			return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -226,7 +226,6 @@ public class ManageBanca {
 
 		} catch (SQLException e) {
 
-			System.out.println(e.getMessage());
 			return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
@@ -259,7 +258,6 @@ public class ManageBanca {
 
 		} catch (SQLException e) {
 
-			System.out.println(e.getMessage());
 			return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
@@ -298,7 +296,6 @@ public class ManageBanca {
 			
 		} catch (SQLException e) {
 			
-			System.out.println(e.getMessage());
 			return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
 				
 		}
@@ -330,7 +327,7 @@ public class ManageBanca {
 			
 			
 		} catch (SQLException e) {
-			System.out.println(e.getMessage());
+
 			return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
 				
 		}
