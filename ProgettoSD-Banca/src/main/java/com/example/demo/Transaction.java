@@ -1,13 +1,19 @@
 package com.example.demo;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatTypes;
 
 public class Transaction {
 	
 	private String id_transfer;
 	private String from;
 	private String to;
+	
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/YYYY hh:mm:ss", timezone="UTC")
 	private Date date;
 	private double amount;
 	
@@ -15,6 +21,7 @@ public class Transaction {
 		this.id_transfer = id;
 		this.from = from;
 		this.to = to;
+		
 		this.date = date;
 		this.amount = amount;
 	}
@@ -55,6 +62,8 @@ public class Transaction {
 	}
 
 	public Date getDate() {
+		
+		//SimpleDateFormat sdf = new SimpleDateFormat("DD/MM/YYYY hh:mm:ss");
 		return date;
 	}
 
