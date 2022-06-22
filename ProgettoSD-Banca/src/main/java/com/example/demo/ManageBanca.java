@@ -50,7 +50,7 @@ public class ManageBanca {
 	}
 
 	@RequestMapping("/api/account")
-	public MappingJacksonValue returnAllAccount() {
+	public ResponseEntity<MappingJacksonValue> returnAllAccount() {
 
 		List<Account> risultato = null;
 	    SimpleBeanPropertyFilter filter = SimpleBeanPropertyFilter.filterOutAllExcept("accountID", "name", "surname", "balance", "transactions");
@@ -62,19 +62,23 @@ public class ManageBanca {
 
 		} catch (SQLException e) {
 
-			System.out.println("Errore sistema: " + e.getMessage());
+			return new ResponseEntity<MappingJacksonValue>(new MappingJacksonValue("Server Error"), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		
 		 MappingJacksonValue mapping = new MappingJacksonValue(risultato);
          mapping.setFilters(filters);
 
-		return mapping;
+		return new ResponseEntity<MappingJacksonValue>(mapping, HttpStatus.OK);
 	}
 
 	@RequestMapping(value = "/api/account", method = RequestMethod.POST)
-	public String creaAccount(@RequestBody String account) {
+	public ResponseEntity<MappingJacksonValue> creaAccount(@RequestBody String account) {
 
 		Map<String, String> body = parseBody(account);
+		
+		SimpleBeanPropertyFilter filter = SimpleBeanPropertyFilter.filterOutAllExcept("accountID");
+	    FilterProvider filters = new SimpleFilterProvider().addFilter("AccountFilter", filter);
+	    
 		Account ac = new Account(body.get("name"), body.get("surname"));
 
 		try {
@@ -85,29 +89,31 @@ public class ManageBanca {
 
 			if (e.getMessage().indexOf("SQLITE_CONSTRAINT_PRIMARYKEY") >= 0) {
 
-				return new ResponseEntity<String>("Constraint key", HttpStatus.CONFLICT).toString();
+				return new ResponseEntity<MappingJacksonValue>(new MappingJacksonValue("Constraint key"), HttpStatus.INTERNAL_SERVER_ERROR);
 			} else {
 
-				return new ResponseEntity<String>("Server Error", HttpStatus.INTERNAL_SERVER_ERROR).toString();
+				return new ResponseEntity<MappingJacksonValue>(new MappingJacksonValue("Server Error"), HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 
 		}
+		MappingJacksonValue mapping = new MappingJacksonValue(ac);
+        mapping.setFilters(filters);
 
-		return ac.getAccountID();
+        return new ResponseEntity<MappingJacksonValue>(mapping, HttpStatus.OK);
 	}
 
 	@RequestMapping(value = "/api/account", method = RequestMethod.DELETE)
-	public String delateAccount(@RequestParam(value = "ID") String IDaccount) {
+	public ResponseEntity<String> delateAccount(@RequestParam(value = "ID") String IDaccount) {
 
 		try {
 			db.deleteAccount(IDaccount);
 
 		} catch (SQLException e) {
 
-			return "Errore: " + e.getMessage();
+			return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		return "Successo";
+		return new ResponseEntity<String>("OK", HttpStatus.OK);
 	}
 
 	@RequestMapping("/api/account/{accountId}")
@@ -163,7 +169,7 @@ public class ManageBanca {
 	}
 
 	@RequestMapping(value = "/api/account/{accountId}", method = RequestMethod.POST)
-	public String deposit(@RequestBody String amount, @PathVariable String accountId) {
+	public ResponseEntity<String> returnAccount(@RequestBody String amount, @PathVariable String accountId) {
 
 		Map<String, String> body = parseBody(amount);
 		double operationAmount = Double.parseDouble(body.get("amount"));
@@ -175,16 +181,16 @@ public class ManageBanca {
 				if(db.changeBalance(accountId, operationAmount)) {
 					
 					if(db.addTransaction(accountId, accountId, operationAmount)) {
-						return "Success";
+						return new ResponseEntity<String>("OK", HttpStatus.OK);
 					}else {
-						return "Error";
+						return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
 					}
 					
 				 }else {
-					 return "Error";
+					 return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
 				 }
 			}else {
-				return "Error balance";
+				return new ResponseEntity<String>("Invalid balance", HttpStatus.CONFLICT);
 			}
 			 
 			 
@@ -192,12 +198,12 @@ public class ManageBanca {
 		} catch (SQLException e) {
 
 			System.out.println(e.getMessage());
-			return "Errore";
+			return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
 	@RequestMapping(value = "/api/account/{accountId}", method = RequestMethod.PUT)
-	public String changeNameSurname(@RequestBody String valueBody, @PathVariable String accountId) {	
+	public ResponseEntity<String> changeNameSurname(@RequestBody String valueBody, @PathVariable String accountId) {	
 		
 		ObjectMapper mapper = new ObjectMapper();
 		Map<String, String> body = null;
@@ -221,14 +227,14 @@ public class ManageBanca {
 		} catch (SQLException e) {
 
 			System.out.println(e.getMessage());
-			return "Errore";
+			return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		return "Successo";
+		return new ResponseEntity<String>("OK", HttpStatus.OK);
 	}
 
 	@RequestMapping(value = "/api/account/{accountId}", method = RequestMethod.PATCH)
-	public String changeValue(@RequestBody String valueBody, @PathVariable String accountId) {
+	public ResponseEntity<String> changeValue(@RequestBody String valueBody, @PathVariable String accountId) {
 		
 		ObjectMapper mapper = new ObjectMapper();
 		Map<String, String> body = null;
@@ -254,15 +260,15 @@ public class ManageBanca {
 		} catch (SQLException e) {
 
 			System.out.println(e.getMessage());
-			return "Errore";
+			return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		return "Successo";
+		return new ResponseEntity<String>("OK", HttpStatus.OK);
 	}
 	
 	
 	@RequestMapping(value = "/api/transfer", method = RequestMethod.POST)
-	public String makeTransfer(@RequestBody String transBody) {
+	public ResponseEntity<String> makeTransfer(@RequestBody String transBody) {
 		
 		Map<String, String> body = parseBody(transBody);
 		boolean fromBalanceUpd = false, toBalanceUpd = false,isTransactionAdded = false;
@@ -276,33 +282,30 @@ public class ManageBanca {
 			if (db.checkBalance(from, -amount)) {
 				
 				fromBalanceUpd = db.changeBalance(from, -amount);
-				System.out.println(fromBalanceUpd);
 				toBalanceUpd = db.changeBalance(to, amount);
-				System.out.println(toBalanceUpd);
 				
 				isTransactionAdded = db.addTransaction(from, to, amount);
-				System.out.println(isTransactionAdded);
 				
 				if(isTransactionAdded) {
-					return "Success";
+					return new ResponseEntity<String>("OK", HttpStatus.OK);
 				}else {
-					return "Error";
+					return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 			}else {
-				return "Error Balance";
+				return new ResponseEntity<String>("Invalid balance", HttpStatus.CONFLICT);
 			}
 			
 			
 		} catch (SQLException e) {
 			
 			System.out.println(e.getMessage());
-			return "Error";
+			return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
 				
 		}
 	}
 	
 	@RequestMapping(value = "/api/divert", method = RequestMethod.POST)
-	public String makeDivert(@RequestBody String transBody) {
+	public ResponseEntity<String> makeDivert(@RequestBody String transBody) {
 		
 		Map<String, String> body = parseBody(transBody);
 		boolean fromBalanceUpd = false, toBalanceUpd = false,isTransactionAdded = false;
@@ -317,18 +320,18 @@ public class ManageBanca {
 				isTransactionAdded = db.addTransaction(trans.getTo(), trans.getFrom(), trans.getAmount());
 				
 				if(isTransactionAdded) {
-					return "Success";
+					return new ResponseEntity<String>("OK", HttpStatus.OK);
 				}else {
-					return "Error";
+					return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 			}else {
-				return "Error Balance";
+				return new ResponseEntity<String>("Invalid balance", HttpStatus.CONFLICT);
 			}
 			
 			
 		} catch (SQLException e) {
 			System.out.println(e.getMessage());
-			return "Error";
+			return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
 				
 		}
 	}
