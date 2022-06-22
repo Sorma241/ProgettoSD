@@ -66,7 +66,7 @@
 
                 xhttp.onreadystatechange = function(){
                     if(xhttp.readyState == 4){
-                        console.log(xhttp.status);
+                        
                         if(xhttp.status == 200){
                             var response = xhttp.responseText;
                             fun(response);
@@ -163,7 +163,9 @@
             document.getElementById("cercaIdButton").addEventListener("click", function(){
                 
                 document.getElementById("errorContainer").style.visibility = "hidden";
+                document.getElementById("transactionTable").innerHTML = "";
                 document.getElementById("resultContainer").style.visibility = "hidden";
+                document.getElementById("errMsg").innerHTML = "";
 
                 var value = accountId.value;
                 
