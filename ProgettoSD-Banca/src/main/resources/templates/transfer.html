@@ -22,9 +22,18 @@
     </head>
     <body>
 
-        <div class="container" id="">
+
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="navbar-nav">
+                <a class="nav-item nav-link active" href="/">Home</a>
+                <a class="nav-item nav-link" href="/transfer">Transfer</a>
+            </div>
+        </nav>
+
+        <div class="container">
 
             <div class="container" id = "searchBox">
+
                 <br>
                 <input type="text" placeholder="mittente" id="fromTB"></input><br>
                 <input type="text" placeholder="destinatario" id="toTB"></input><br>
@@ -33,7 +42,7 @@
             </div>
             <br><br>
             <div class="container" id = "resultBox">
-                <label id="resultLabel"></label>
+                <label id="resultLabel" ></label>
             </div>
 
         </div>
@@ -68,12 +77,12 @@
                 if(response == "Success"){
 
                     document.getElementById("resultBox").style.visibility = "visible";
-                    document.getElementById("resultLabel").innerHTML = "Account inserito";
+                    document.getElementById("resultLabel").innerHTML = "Transazione Inserita";
                     
                 }else if(response == "Error Balance"){
 
                     document.getElementById("resultBox").style.visibility = "visible";
-                    document.getElementById("resultLabel").innerHTML = "Errore bilancio insufficiente"
+                    document.getElementById("resultLabel").innerHTML = "Errore bilancio insufficiente";
                 }else {
 
                     document.getElementById("resultBox").style.visibility = "visible";
