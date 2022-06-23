@@ -136,7 +136,7 @@ public class Database {
 		return allTransfer;
 	}
 	
-	public boolean changeBalance(String accountId, double amount) throws SQLException {
+	public double changeBalance(String accountId, double amount) throws SQLException {
 		
 		String oldBalanceSQL = "SELECT balance FROM Account a WHERE a.accountId = '"+ accountId + "';";
 	
@@ -149,10 +149,9 @@ public class Database {
 		
 		st.executeUpdate(sql);
 		
-		
 		endConnection(conn);
 		
-		return true;
+		return newBalance;
 	}
 	
 	public boolean checkBalance(String id, double amount) throws SQLException {
@@ -185,29 +184,35 @@ public class Database {
 		return resuls;
 	}
 	
-	public boolean addTransaction (String id_from, String id_to, double amount) throws SQLException {
+	public String addTransaction (String id_from, String id_to, double amount) throws SQLException {
 		String sql = "INSERT INTO Transfer(id_transfer, from_account, to_account, transfer_date, amount) VALUES(?,?,?, datetime('now','localtime'), ?)";
 		
 		Connection conn = this.connect();
 		
+		String id_transfer = Transaction.createUUID();
+		
 		PreparedStatement pstmt = conn.prepareStatement(sql);
-		pstmt.setString(1, Transaction.createUUID());
+		pstmt.setString(1, id_transfer);
 		pstmt.setString(2, id_from);
 		pstmt.setString(3, id_to);
 		pstmt.setDouble(4, amount);
 		pstmt.executeUpdate();
 		
 		endConnection(conn);
-		return true;
+		return id_transfer;
 	}
 	
-	public void changeValue(String accountId, String value, String parameter) throws SQLException {
+	public void changeValue(String accountId, String value, String parameter) throws SQLException, NotFoundException {
 		String sql = "UPDATE Account SET '" + parameter + "' = " + "'" + value + "' WHERE accountId = '"+ accountId + "'";
 		
 		Connection conn = this.connect();
 		
 		Statement st = conn.createStatement();
-		st.executeUpdate(sql);
+		int change = st.executeUpdate(sql);
+		
+		if(change == 0) {
+			throw new NotFoundException();
+		}
 		
 		endConnection(conn);
 	}

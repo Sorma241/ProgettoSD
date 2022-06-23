@@ -162,6 +162,9 @@ public class ManageBanca {
 			ac = db.returnAccount(accountId);
 		} catch (SQLException e) {
 			
+			if(e.getMessage() == "ResultSet closed") {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+			}
 			return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
@@ -170,35 +173,37 @@ public class ManageBanca {
 	}
 
 	@RequestMapping(value = "/api/account/{accountId}", method = RequestMethod.POST)
-	public ResponseEntity<String> returnAccount(@RequestBody String amount, @PathVariable String accountId) {
-
+	public ResponseEntity<MappingJacksonValue> deposit(@RequestBody String amount, @PathVariable String accountId) {
+		
+		Map<String, String> response = new HashMap<>();
+		double newBalance = 0.0;
+		String idTransactionAdded = "";
+		
 		Map<String, String> body = parseBody(amount);
 		double operationAmount = Double.parseDouble(body.get("amount"));
+		
 
 		try {
 			 
 			if(db.checkBalance(accountId, operationAmount)) {
+				newBalance = db.changeBalance(accountId, operationAmount);
+				idTransactionAdded = db.addTransaction(accountId, accountId, operationAmount);
 				
-				if(db.changeBalance(accountId, operationAmount)) {
-					
-					if(db.addTransaction(accountId, accountId, operationAmount)) {
-						return new ResponseEntity<String>("OK", HttpStatus.OK);
-					}else {
-						return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
-					}
-					
-				 }else {
-					 return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
-				 }
+				response.put("id_transaction", idTransactionAdded);
+				response.put("newBalance", newBalance + "");
+				
+				MappingJacksonValue mapping = new MappingJacksonValue(response);
+				
+				return new ResponseEntity<MappingJacksonValue>(mapping, HttpStatus.OK);
 			}else {
-				return new ResponseEntity<String>("Invalid balance", HttpStatus.CONFLICT);
+				return new ResponseEntity<MappingJacksonValue>(new MappingJacksonValue("Invalid balance"), HttpStatus.CONFLICT);
 			}
 			 
 			 
 
 		} catch (SQLException e) {
 			
-			return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<MappingJacksonValue>(new MappingJacksonValue("Failed"), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -238,6 +243,10 @@ public class ManageBanca {
 		} catch (SQLException e) {
 
 			return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
+			
+		} catch (NotFoundException e) {
+			
+			return new ResponseEntity<String>("ID not found", HttpStatus.NOT_FOUND);
 		}
 
 		return new ResponseEntity<String>("OK", HttpStatus.OK);
@@ -259,6 +268,10 @@ public class ManageBanca {
 			
 		}
 		String value = "";
+		
+		if(body.size() != 1) {
+			return new ResponseEntity<String>("Wrong field number", HttpStatus.BAD_REQUEST);
+		}
 
 		try {
 			
@@ -271,9 +284,11 @@ public class ManageBanca {
 			if (body.containsKey("name")) {
 				value = body.get("name");
 				db.changeValue(accountId, value, "name");
+				
 			} else if(body.containsKey("surname")){
 				value = body.get("surname");
 				db.changeValue(accountId, value, "surname");
+				
 			}else {
 				return new ResponseEntity<String>("Failed invalid field", HttpStatus.BAD_REQUEST);
 			}
@@ -281,6 +296,10 @@ public class ManageBanca {
 		} catch (SQLException e) {
 
 			return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
+		}catch (NotFoundException e) {
+			
+			return new ResponseEntity<String>("ID not found", HttpStatus.NOT_FOUND);
+			
 		}
 
 		return new ResponseEntity<String>("OK", HttpStatus.OK);
@@ -288,49 +307,55 @@ public class ManageBanca {
 	
 	
 	@RequestMapping(value = "/api/transfer", method = RequestMethod.POST)
-	public ResponseEntity<String> makeTransfer(@RequestBody String transBody) {
+	public ResponseEntity<MappingJacksonValue> makeTransfer(@RequestBody String transBody) {
 		
 		Map<String, String> body = parseBody(transBody);
-		boolean fromBalanceUpd = false, toBalanceUpd = false,isTransactionAdded = false;
+		Map<String, String> response = new HashMap();
+		
+		double newFromBalance = 0.0, newToBalance = 0.0;
+		String idTransactionAdded = "";
 		
 		String from = body.get("from");
 		String to = body.get("to");
 		double amount = Double.parseDouble(body.get("amount"));
 		
 		if(amount < 0) {
-			return new ResponseEntity<String>("negative amount", HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<MappingJacksonValue>(new MappingJacksonValue("negative amount"), HttpStatus.BAD_REQUEST);
 		}
 		
 		
 		try {
 			
+			db.returnAccount(from);
+			db.returnAccount(to);
+			
 			if (db.checkBalance(from, -amount)) {
 				
-				fromBalanceUpd = db.changeBalance(from, -amount);
-				toBalanceUpd = db.changeBalance(to, amount);
+				newFromBalance = db.changeBalance(from, -amount);
+				newToBalance = db.changeBalance(to, amount);
 				
-				if(fromBalanceUpd && toBalanceUpd) {
-					isTransactionAdded = db.addTransaction(from, to, amount);
-					
-					if(isTransactionAdded) {
-						return new ResponseEntity<String>("OK", HttpStatus.OK);
-					}else {
-						return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
-					}
-				}else {
-					return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
-				}
+				idTransactionAdded = db.addTransaction(from, to, amount);
+				response.put("id_transaction", idTransactionAdded);
+				response.put("from", from);
+				response.put("newFromBalance", newFromBalance + "");
+				response.put("to", to);
+				response.put("newtoBalance", newToBalance + "");
 				
+				MappingJacksonValue mapping = new MappingJacksonValue(response);
+				
+				return new ResponseEntity<MappingJacksonValue>(mapping, HttpStatus.OK);
 				
 			}else {
-				return new ResponseEntity<String>("Invalid balance", HttpStatus.CONFLICT);
+				return new ResponseEntity<MappingJacksonValue>(new MappingJacksonValue("Invalid balance"), HttpStatus.CONFLICT);
 			}
 			
 			
 		} catch (SQLException e) {
 			
-			return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
-				
+			if(e.getMessage() == "ResultSet closed") {
+				return new ResponseEntity<MappingJacksonValue>(new MappingJacksonValue("ID not found"), HttpStatus.NOT_FOUND);
+			}
+			return new ResponseEntity<MappingJacksonValue>(new MappingJacksonValue("Failed"), HttpStatus.INTERNAL_SERVER_ERROR);	
 		}
 	}
 	
@@ -338,27 +363,17 @@ public class ManageBanca {
 	public ResponseEntity<String> makeDivert(@RequestBody String transBody) {
 		
 		Map<String, String> body = parseBody(transBody);
-		boolean fromBalanceUpd = false, toBalanceUpd = false,isTransactionAdded = false;
 		
 		try {
 			Transaction trans = db.returnTransaction(body.get("transfertID"));
 			if (db.checkBalance(trans.getTo(), -trans.getAmount())) {
 				
-				fromBalanceUpd = db.changeBalance(trans.getTo(), -trans.getAmount());
-				toBalanceUpd = db.changeBalance(trans.getFrom(), trans.getAmount());
+				db.changeBalance(trans.getTo(), -trans.getAmount());
+				db.changeBalance(trans.getFrom(), trans.getAmount());
 				
-				if(fromBalanceUpd && toBalanceUpd) {
-					isTransactionAdded = db.addTransaction(trans.getTo(), trans.getFrom(), trans.getAmount());
-					
-					if(isTransactionAdded) {
-						return new ResponseEntity<String>("OK", HttpStatus.OK);
-					}else {
-						return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
-					}
-				}else {
-					return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
-				}
+				db.addTransaction(trans.getTo(), trans.getFrom(), trans.getAmount());
 				
+				return new ResponseEntity<String>("OK", HttpStatus.OK);
 				
 			}else {
 				return new ResponseEntity<String>("Invalid balance", HttpStatus.CONFLICT);
@@ -366,7 +381,10 @@ public class ManageBanca {
 			
 			
 		} catch (SQLException e) {
-
+			
+			if(e.getMessage() == "ResultSet closed") {
+				return new ResponseEntity<String>("ID not found", HttpStatus.NOT_FOUND);
+			}
 			return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
 				
 		}
