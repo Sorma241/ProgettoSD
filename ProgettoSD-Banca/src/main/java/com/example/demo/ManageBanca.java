@@ -218,11 +218,22 @@ public class ManageBanca {
 		
 		String newName = body.get("name");
 		String newSurname = body.get("surname");
+		
+		if(newSurname == null) {
+			return new ResponseEntity<String>("Surname not found", HttpStatus.BAD_REQUEST);
+		}else if(newName == null) {
+			return new ResponseEntity<String>("Name not found", HttpStatus.BAD_REQUEST);
+		}
+		
+		
+		if(body.size() != 2) {
+			return new ResponseEntity<String>("Wrong field number", HttpStatus.BAD_REQUEST);
+		}
 
 		try {
-			
+	
 			db.changeValue(accountId, newName, "name");
-			db.changeValue(accountId, newSurname, "surname");
+			db.changeValue(accountId, newSurname, "surname");			
 
 		} catch (SQLException e) {
 
@@ -243,17 +254,28 @@ public class ManageBanca {
 			body = mapper.readValue(valueBody, Map.class);
 			
 		} catch (JsonProcessingException e1) {
-			e1.printStackTrace();
+			
+			return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
+			
 		}
 		String value = "";
 
 		try {
+			
+			
+			if(body.containsKey("name") && body.containsKey("surname")) {
+				return new ResponseEntity<String>("Failed only name or surname required", HttpStatus.BAD_REQUEST);
+			}
+			
+			
 			if (body.containsKey("name")) {
 				value = body.get("name");
 				db.changeValue(accountId, value, "name");
-			} else {
+			} else if(body.containsKey("surname")){
 				value = body.get("surname");
 				db.changeValue(accountId, value, "surname");
+			}else {
+				return new ResponseEntity<String>("Failed invalid field", HttpStatus.BAD_REQUEST);
 			}
 
 		} catch (SQLException e) {
@@ -275,6 +297,11 @@ public class ManageBanca {
 		String to = body.get("to");
 		double amount = Double.parseDouble(body.get("amount"));
 		
+		if(amount < 0) {
+			return new ResponseEntity<String>("negative amount", HttpStatus.BAD_REQUEST);
+		}
+		
+		
 		try {
 			
 			if (db.checkBalance(from, -amount)) {
@@ -282,13 +309,19 @@ public class ManageBanca {
 				fromBalanceUpd = db.changeBalance(from, -amount);
 				toBalanceUpd = db.changeBalance(to, amount);
 				
-				isTransactionAdded = db.addTransaction(from, to, amount);
-				
-				if(isTransactionAdded) {
-					return new ResponseEntity<String>("OK", HttpStatus.OK);
+				if(fromBalanceUpd && toBalanceUpd) {
+					isTransactionAdded = db.addTransaction(from, to, amount);
+					
+					if(isTransactionAdded) {
+						return new ResponseEntity<String>("OK", HttpStatus.OK);
+					}else {
+						return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
+					}
 				}else {
 					return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
 				}
+				
+				
 			}else {
 				return new ResponseEntity<String>("Invalid balance", HttpStatus.CONFLICT);
 			}
@@ -314,13 +347,19 @@ public class ManageBanca {
 				fromBalanceUpd = db.changeBalance(trans.getTo(), -trans.getAmount());
 				toBalanceUpd = db.changeBalance(trans.getFrom(), trans.getAmount());
 				
-				isTransactionAdded = db.addTransaction(trans.getTo(), trans.getFrom(), trans.getAmount());
-				
-				if(isTransactionAdded) {
-					return new ResponseEntity<String>("OK", HttpStatus.OK);
+				if(fromBalanceUpd && toBalanceUpd) {
+					isTransactionAdded = db.addTransaction(trans.getTo(), trans.getFrom(), trans.getAmount());
+					
+					if(isTransactionAdded) {
+						return new ResponseEntity<String>("OK", HttpStatus.OK);
+					}else {
+						return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
+					}
 				}else {
 					return new ResponseEntity<String>("Failed", HttpStatus.INTERNAL_SERVER_ERROR);
 				}
+				
+				
 			}else {
 				return new ResponseEntity<String>("Invalid balance", HttpStatus.CONFLICT);
 			}

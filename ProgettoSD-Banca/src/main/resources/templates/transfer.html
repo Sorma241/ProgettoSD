@@ -50,7 +50,7 @@
         
 
         <script>
-            function getResult(url, method, fun, from, to, amount){
+            function getResult(url, method, from, to, amount){
 
                 var xhttp = new XMLHttpRequest();
 
@@ -58,9 +58,19 @@
                     if(xhttp.readyState == 4){
                         
                         if(xhttp.status == 200){
-                            var response = xhttp.responseText;
-                            console.log(response);
-                            fun(response);
+                            
+                            document.getElementById("resultBox").style.visibility = "visible";
+                            document.getElementById("resultLabel").innerHTML = "Transazione Inserita";
+
+                        }else if(xhttp.status == 409){
+
+                            document.getElementById("resultBox").style.visibility = "visible";
+                            document.getElementById("resultLabel").innerHTML = "Errore bilancio insufficiente";
+
+                        }else{
+                            
+                            document.getElementById("resultBox").style.visibility = "visible";
+                            document.getElementById("resultLabel").innerHTML = "Errore del server";
                         }
                         
                     }
@@ -69,27 +79,6 @@
                 var body = "from="+from+"&to="+to+"&amount="+amount;
                 xhttp.open(method, url, true);
                 xhttp.send(body);
-            }
-
-            function checkResponse(response){    
-
-
-                if(response == "Success"){
-
-                    document.getElementById("resultBox").style.visibility = "visible";
-                    document.getElementById("resultLabel").innerHTML = "Transazione Inserita";
-                    
-                }else if(response == "Error Balance"){
-
-                    document.getElementById("resultBox").style.visibility = "visible";
-                    document.getElementById("resultLabel").innerHTML = "Errore bilancio insufficiente";
-                }else {
-
-                    document.getElementById("resultBox").style.visibility = "visible";
-                    document.getElementById("resultLabel").innerHTML = "Errore del server";
-                }
-
-
             }
 
             document.getElementById("ConfirmButton").addEventListener("click", function(){
@@ -105,7 +94,7 @@
                     var method = "POST";
                     var url = "http://localhost:8080/api/transfer";
                     console.log(amount)
-                    getResult(url, method, checkResponse, from, to, amount);
+                    getResult(url, method, from, to, amount);
 
 
                 }else{
