@@ -68,7 +68,7 @@
                             document.getElementById("resultLabel").innerHTML = "Errore bilancio insufficiente";
 
                         }else{
-                            
+
                             document.getElementById("resultBox").style.visibility = "visible";
                             document.getElementById("resultLabel").innerHTML = "Errore del server";
                         }
@@ -93,7 +93,7 @@
                 if(from != "" && to != "" && amount != ""){
                     var method = "POST";
                     var url = "http://localhost:8080/api/transfer";
-                    console.log(amount)
+                    
                     getResult(url, method, from, to, amount);
 
 
